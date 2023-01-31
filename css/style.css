@@ -1,18 +1,47 @@
 
+body {
+	font-family: 'Oxygen', sans-serif;
+}
+
 .container {
 	text-align: center;
 }
 
+table {
+	margin: auto;
+}
+
 #display {
-	width: 500px;
 	height: 60px;
 
-	margin: 10px auto 10px auto;
+	padding: 10px;
+	margin: 10px 5px 10px 5px;
+
 	border: 1px solid black;
+	border-radius: 5px;
+
+	text-align: right;
+	vertical-align: text-bottom;
+	font-size: 30px;
 }
 
 button {
 	width: 100px;
 	height: 30px;
 	margin: 5px;
+
+	border: 1px solid black;
+	border-radius: 3px;
+}
+
+.num {
+	background-color: #f2f2f2;
+}
+
+.op {
+	background-color: gray;
+}
+
+#o\={
+	background-color: #1a90ff;
 }
