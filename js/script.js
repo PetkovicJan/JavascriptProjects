@@ -17,7 +17,7 @@ function isNumber(token){
 }
 
 function isOperator(token){
-	var ops = ["+", "-", "*", "%"];
+	const ops = ["+", "-", "*", "/", "(", ")", "%"];
 	for (var i = 0; i < ops.length; i++) {
 		if(token == ops[i]){
 			return true;
@@ -80,7 +80,7 @@ function computeExpression(expression){
 // Define all the logic after the content has been loaded.
 document.addEventListener("DOMContentLoaded", function(event){
 
-	// Handle numerical keys.
+	// On numeric key pressed, add the number to the display.
 	for (var i = 0; i < 10; i++) {
 		var numKey = "n" + i;
 		document.getElementById(numKey).addEventListener("click", function(){
@@ -88,8 +88,8 @@ document.addEventListener("DOMContentLoaded", function(event){
 		});
 	}
 
-	// Handle operations except equal sign, which computes the value.
-	var ops = ["+", "-", "*", "%", "."];
+	// On operator key pressed, add the operator to the display.
+	var ops = ["+", "-", "*", "/", "(", ")", "%", "."];
 	for (var i = 0; i < ops.length; i++) {
 		var opKey = "o" + ops[i];
 		document.getElementById(opKey).addEventListener("click", function(){
@@ -97,13 +97,19 @@ document.addEventListener("DOMContentLoaded", function(event){
 		});
 	}
 
+	// On equal button pressed, compute the expression and display the result.
 	var eqKey = "o=";
 	document.getElementById(eqKey).addEventListener("click", function(){
 		var displayedValue = document.getElementById("display").innerHTML;
-		var computedValue = computeExpression(displayedValue);
+		var computedValue = evaluateExpression(displayedValue);
 		document.getElementById("display").innerHTML = computedValue;
 	});
 
+	// On clear button pressed, clear the display.
+	var clearKey = "oc";
+	document.getElementById(clearKey).addEventListener("click", function(){
+		document.getElementById("display").innerHTML = "";
+	});
 });
 
 })(window);
