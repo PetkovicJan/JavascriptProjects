@@ -219,6 +219,7 @@ function buildComputationTree(tokens) {
 
 function evaluateExpressionFromTokens(tokens) {
 	const computationTree = buildComputationTree(tokens);
+	console.log(computationTree);
 	return evaluateComputationTree(computationTree);
 }
 
