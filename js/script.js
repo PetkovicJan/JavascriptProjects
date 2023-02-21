@@ -17,7 +17,7 @@ function isNumber(token){
 }
 
 function isOperator(token){
-	const ops = ["+", "-", "*", "/", "(", ")", "%"];
+	const ops = ["+", "-", "*", "/", "(", ")", "^"];
 	for (var i = 0; i < ops.length; i++) {
 		if(token == ops[i]){
 			return true;
@@ -76,18 +76,30 @@ function evaluateBinaryOperation(first, second, op) {
 		return first * second;
 	} else if (op === '/') {
 		return first / second;
-	} else if (op === '%') {
-		return first % second;
+	} else if (op === '^') {
+		return first ** second;
 	} else {
 		console.log("Unknown token!");
 		return undefined;
 	}
 }
 
-function secondOperatorHasPrecedence(first, second) {
-	const isFirstLow = (first === '+') || (first === '-');
-	const isSecondHigh = (second === '*') || (second === '/');
-	return (isFirstLow && isSecondHigh);
+function getOperatorPrecedenceValue(op) {
+	if((op === '+') || (op === '-')) {
+		return 0;
+	} else if ((op === '*') || (op === '/')) {
+		return 1;
+	} else if (op === '^') {
+		return 2;
+	} else {
+		console.log("Unknown operator!");
+	}
+}
+
+function firstOperatorHasPrecedenceOverSecond(first, second) {
+	const firstPrecedenceVal = getOperatorPrecedenceValue(first);
+	const secondPrecedenceVal = getOperatorPrecedenceValue(second);
+	return firstPrecedenceVal > secondPrecedenceVal;
 }
 
 function evaluateComputationTree(computationTree) {
@@ -133,7 +145,7 @@ function buildComputationTree(tokens) {
 		}
 
 		// Compare the operators.
-		if(secondOperatorHasPrecedence(lastNode.operator, opValue)) {
+		if(firstOperatorHasPrecedenceOverSecond(opValue, lastNode.operator)) {
 			// New operator has precedence over the last. The second operand of the last node becomes the first
 			// operand of the new node, while the result of the new expression becomes the second operand 
 			// of the last. "Bubble down" the new node.
@@ -149,28 +161,51 @@ function buildComputationTree(tokens) {
 			// Finally, reset the last node.
 			lastNode = newNode;
 		} else {
-			// Last operator has precedence over the new. "Bubble up" the new node.
+			// Last operator has precedence over the new. "Bubble up" the new node, until the new operator has
+			// precedence (or we reach the tree root).
 			let currentNode = lastNode;
-			do {
+			while(true) {
 				const parentNode = currentNode.parentNode;
 				if(parentNode === null) {
 					break;
+				} else if(firstOperatorHasPrecedenceOverSecond(opValue, parentNode.operator)) {
+					break;
+				} else {
+					currentNode = parentNode;
 				}
+			}
 
-				currentNode = parentNode;
-			} while(secondOperatorHasPrecedence(opValue, currentNode.operator))
+			// Obtain parent reference. The new node goes between the current node and its parent node.
+			let parentNode = currentNode.parentNode;
 
-			// Create new node.
+			// Check whether the current node is a left or right child of its parent (comparing object references).
+			let isLeftChild = false;
+			if(parentNode !== null) {
+				isLeftChild = (parentNode.first === currentNode);
+			}
+
+			// Create a new node and insert it between the current node and its parent.
 			const newNode = {};
 			newNode.first = currentNode;
 			newNode.second = numValue;
 			newNode.operator = opValue;
-			newNode.parentNode = null;
+			newNode.parentNode = parentNode;
+
+			// Current node's parent is now new node.
+			currentNode.parentNode = newNode;
+
+			// Parent's operand is now the new node.
+			if(parentNode !== null) {
+				if(isLeftChild) {
+					parentNode.first = newNode;
+				} else {
+					parentNode.second = newNode;
+				}
+			}
 
 			// Finally, reset the last node.
 			lastNode = newNode;
 		}
-
 	}
 
 	// Root of the computation tree.
@@ -208,7 +243,7 @@ document.addEventListener("DOMContentLoaded", function(event){
 	}
 
 	// On operator key pressed, add the operator to the display.
-	var ops = ["+", "-", "*", "/", "(", ")", "%", "."];
+	var ops = ["+", "-", "*", "/", "(", ")", "^", "."];
 	for (var i = 0; i < ops.length; i++) {
 		var opKey = "o" + ops[i];
 		document.getElementById(opKey).addEventListener("click", function(){
