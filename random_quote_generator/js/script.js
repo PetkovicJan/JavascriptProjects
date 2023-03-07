@@ -4,8 +4,12 @@
 // Define all the logic after the content has been loaded.
 document.addEventListener("DOMContentLoaded", function(event){
 
-	const onGenerate = (result) => {
-		document.getElementById("quoteDiv").innerHTML = '\"' + result.quote + '\"' + " " + result.author;
+	const quoteElement = document.getElementById("quote");
+	const authorElement = document.getElementById("author");
+
+	const onGenerate = ({ quote, author }) => {
+		quoteElement.innerHTML = '\"' + quote + '\"';
+		authorElement.innerHTML = author;
 	};
 
 	document.getElementById("generateButton").addEventListener("click", function(){
