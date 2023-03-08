@@ -11,39 +11,46 @@
 </head>
 
 <body>
-
-	<h1>Tip Calculator</h1>
-
 	<div class="container">
 
-		<p>
-			<label for="bill">Bill Amount (€)</label>		
-			<input type="number" name="bill" min="0">
-		</p>
+		<h1>Tip Calculator</h1>
 
-		<p>
-			<label for="service">How was the service?</label>
-			<select name="service">
-				<option value="0.25">25% - Top Notch</option>
-				<option value="0.20">20% - Excellent</option>
-				<option value="0.15">15% - Good</option>
-				<option value="0.10">10% - Bad</option>
-				<option value="0.05">5% - Worst</option>
-			</select>
-		</p>
+		<form class="form">
+			<ul>
+				<li>
+					<label for="bill">Bill Amount (€)</label>
+					<input id="bill" type="number" name="bill" min="0" placeholder="Amount to be payed">
+				</li>
 
-		<p>
-			<label for="persons">Number of persons</label>		
-			<input type="number" name="persons" min="1" max="12">
-		</p>
+				<li>
+					<label for="service">How was the service?</label>
+					<select id="service" name="service">
+						<option selected disabled hidden> Select </option>
+						<option value="0.25">Top Notch (25%)</option>
+						<option value="0.20">Excellent (20%)</option>
+						<option value="0.15">Good (15%)</option>
+						<option value="0.10">Bad (10%)</option>
+						<option value="0.05">Worst (5%)</option>
+					</select>
+				</li>
 
-		<p>
-			<button id="calculateButton">Calculate</button>			
-		</p>
+				<li>
+					<label for="people">Number of people</label>
+					<input id="people" type="number" name="people" min="1" max="12" placeholder="Number of people sharing the bill">
+				</li>
 
-		<p id="tipDisplay"></p>
+				<li>
+					<button type="button" id="calculateButton">Calculate</button>
+				</li>
+
+				<li>
+					<span id="tipDisplay"></p>
+				</li>
+
+			</ul>
+		</form>
 	</div>
 
-  <script src="js/script.js"></script>
+    <script src="js/script.js"></script>
 </body>
 </html>

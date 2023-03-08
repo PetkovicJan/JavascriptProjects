@@ -1,13 +1,82 @@
 
-body {
+body, button {
 	font-family: 'Oxygen', sans-serif;
+	font-size: 18px;
 }
 
 h1 {
 	margin: 60px;
 	text-align: center;
+	font-size: 30px;
 }
 
-.container {
-	text-align: center;
+form {
+  /* Center the form on the page */
+  margin: 0 auto;
+  width: 400px;
+  /* Form outline */
+  padding: 1em;
+  border: 1px solid #ccc;
+  border-radius: 1em;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+form li + li {
+  margin-top: 1em;
+}
+
+label {
+  /* Uniform size & alignment */
+  display: block;
+  width: 200px;
+  text-align: left;
+}
+
+label, input, select, option, button {
+	margin: 5px;
+}
+
+input,
+textarea, select, option {
+  /* Add padding so that text is not touching the bounding box. */
+  padding: 5px;
+
+  /* To make sure that all text fields have the same font settings
+     By default, textareas have a monospace font */
+  font: 1em sans-serif;
+
+  /* Uniform text field size */
+  width: 400px;
+  box-sizing: border-box;
+
+  /* Match form field borders */
+  border: 1px solid #999;
+}
+
+input:focus,
+textarea:focus {
+  /* Additional highlight for focused elements */
+  border-color: #000;
+}
+
+textarea {
+  /* Align multiline text fields with their labels */
+  vertical-align: top;
+
+  /* Provide space to type some text */
+  height: 5em;
+}
+
+.button {
+  /* Align buttons with the text fields */
+  padding-left: 90px; /* same size as the label elements */
+}
+
+#tipDisplay {
+	color: red;
 }
