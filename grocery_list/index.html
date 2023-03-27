@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Grocery list</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <div class="container">
+
+
+    <h1>Grocery list</h1>
+
+    <ul>
+      <li>
+        <label for="item">Item</label>
+        <input id="item" type="text" name="item">
+      </li>
+      <li>
+        <label for="quantity">Quantity</label>
+        <input id="quantity" type="number" name="quantity" min="1" max="100">
+        <button id="addItemButton">Add</button>
+      </li>
+    </ul>
+
+    <p>Still need to grab</p>
+    <hr>
+    <ul id="toGrabList"></ul>
+
+    <p>In cart</p>
+    <hr>
+    <ul id="inCartList"></ul>
+
+  </div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+
+body {
+	font-family: 'Oxygen', sans-serif;
+}
+
+.container {
+  width: 500px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+ul {
+  padding: 0px;
+  list-style: none;
+  text-align: left;
+}
+
+label {
+  display: block;
+  text-align: left;
+}
+
+input {
+  width: 200px;
+}
+
+p {
+  text-align: left;
+}
+
