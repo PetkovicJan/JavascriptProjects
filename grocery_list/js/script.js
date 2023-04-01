@@ -16,27 +16,39 @@ document.addEventListener("DOMContentLoaded", function(event){
 
     addNewItemToList(toGrabList, itemName, quantity);
   });
-
 });
 
 function addNewItemToList(list, name, quantity) {
 
   const newItem = document.createElement("li");
+  newItem.className = "list";
+
   const itemText = document.createTextNode(`${name} (${quantity})`);
   newItem.appendChild(itemText);
 
-  const addButton = document.createElement("button");
-  const addText = document.createTextNode("Add");
-  addButton.appendChild(addText);
-
-  const removeButton = document.createElement("button");
-  const removeText = document.createTextNode("Remove");
-  removeButton.appendChild(removeText);
-
-  newItem.appendChild(addButton);
-  newItem.appendChild(removeButton);
+  const buttonsDiv = document.createElement("div");
+  buttonsDiv.className = "list";
+  const addButton = createButtonWithImg("resources/check-solid.svg");
+  const removeButton = createButtonWithImg("resources/xmark-solid.svg");
+  buttonsDiv.appendChild(addButton);
+  buttonsDiv.appendChild(removeButton);
+  newItem.appendChild(buttonsDiv);
 
   list.appendChild(newItem);
+}
+
+function createButtonWithImg(imgUrl) {
+
+  const button = document.createElement("button");
+  button.className = "list";
+
+  const img = document.createElement("img");
+  img.className = "buttonImg";
+  img.src = imgUrl;
+
+  button.insertBefore(img, button.firstChild);
+
+  return button;
 }
 
 })(window);
