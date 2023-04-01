@@ -11,10 +11,11 @@ document.addEventListener("DOMContentLoaded", function(event){
   const inCartList = document.getElementById("inCartList");
 
   document.getElementById("addItemButton").addEventListener("click", () => {
-    const itemName = itemInput.value;
-    const quantity = quantityInput.value;
 
-    addNewItemToList(toGrabList, inCartList, itemName, quantity);
+    addNewItemToList(toGrabList, inCartList, itemInput.value, quantityInput.value);
+
+    itemInput.value = "";
+    quantityInput.value = "";
   });
 });
 
