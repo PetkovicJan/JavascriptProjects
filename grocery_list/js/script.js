@@ -14,27 +14,57 @@ document.addEventListener("DOMContentLoaded", function(event){
     const itemName = itemInput.value;
     const quantity = quantityInput.value;
 
-    addNewItemToList(toGrabList, itemName, quantity);
+    addNewItemToList(toGrabList, inCartList, itemName, quantity);
   });
 });
 
-function addNewItemToList(list, name, quantity) {
+const ItemStage = {
+  ToGrab: 1,
+  InCart: 2
+};
+
+function addNewItemToList(grabList, cartList, name, quantity) {
 
   const newItem = document.createElement("li");
   newItem.className = "list";
+  newItem.itemStage = ItemStage.ToGrab;
 
   const itemText = document.createTextNode(`${name} (${quantity})`);
   newItem.appendChild(itemText);
 
+  const addButton = createButtonWithImg("resources/check-solid.svg");
+  addButton.addEventListener("click", () => {
+    const itemStage = newItem.itemStage;
+    if(itemStage === ItemStage.ToGrab) {
+      newItem.itemStage = ItemStage.InCart;
+      cartList.appendChild(newItem);
+    } else if (itemStage === ItemStage.InCart) {
+
+    } else {
+      console.error("Unknown item stage!");      
+    }
+  });
+
+  const removeButton = createButtonWithImg("resources/xmark-solid.svg");
+  removeButton.addEventListener("click", () => {
+    const itemStage = newItem.itemStage;
+    if(itemStage === ItemStage.ToGrab) {
+      newItem.remove();
+    } else if (itemStage === ItemStage.InCart) {
+      newItem.itemStage = ItemStage.ToGrab;
+      grabList.appendChild(newItem);
+    } else {
+      console.error("Unknown item stage!");      
+    }
+  });
+
   const buttonsDiv = document.createElement("div");
   buttonsDiv.className = "list";
-  const addButton = createButtonWithImg("resources/check-solid.svg");
-  const removeButton = createButtonWithImg("resources/xmark-solid.svg");
   buttonsDiv.appendChild(addButton);
   buttonsDiv.appendChild(removeButton);
   newItem.appendChild(buttonsDiv);
 
-  list.appendChild(newItem);
+  grabList.appendChild(newItem);
 }
 
 function createButtonWithImg(imgUrl) {
