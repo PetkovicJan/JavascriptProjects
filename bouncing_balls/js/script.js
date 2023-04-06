@@ -13,14 +13,43 @@ class Vector {
         return new Vector(this.x, this.y);
     }
 
-    add(vec) {
-        this.x += vec.x;
-        this.y += vec.y;
+    // Add another vector to this vector
+    add(other) {
+        return new Vector(this.x + other.x, this.y + other.y);
     }
 
-    mul(val) {
-        this.x *= val;
-        this.y *= val;
+    // Subtract another vector from this vector
+    subtract(other) {
+        return new Vector(this.x - other.x, this.y - other.y);
+    }
+
+    // Multiply this vector by a scalar
+    multiply(scalar) {
+        return new Vector(this.x * scalar, this.y * scalar);
+    }
+
+    // Get the magnitude (length) of this vector squared
+    normSquared() {
+        return (Math.pow(this.x, 2) + Math.pow(this.y, 2));
+    }
+
+    // Get the magnitude (length) of this vector
+    norm() {
+        return Math.sqrt(this.normSquared());
+    }
+
+    // Normalize this vector (i.e., make it have length 1)
+    normalize() {
+        const mag = this.norm();
+        if (mag === 0) {
+            return new Vector(0, 0);
+        } else {
+            return this.multiply(1 / mag);
+        }
+    }
+
+    dot(other) {
+        return this.x * other.x + this.y * other.y;
     }
 }
 
@@ -29,12 +58,6 @@ class Ball {
         this.position = position;
         this.velocity = velocity;
         this.radius = radius;
-    }
-
-    update(timeDiff) {
-        const shift = this.velocity.clone();
-        shift.mul(timeDiff);
-        this.position.add(shift);
     }
 }
 
@@ -45,19 +68,31 @@ class Physics {
         this.gravity = gravity;
     }
 
-    updateBalls(balls, timeDiff) {
-        balls.forEach( ball => {
-            this.updateBall(ball, timeDiff);
-        });
+    detectCollision(ball1, ball2) {
+        const pos1 = ball1.position;
+        const pos2 = ball2.position;
+        const dist = pos2.subtract(pos1).norm();
+        return dist < (ball1.radius + ball2.radius);
+    }
+
+    handleCollision(ball1, ball2) {
+        // We assume equal mass of balls.
+        const v1 = ball1.velocity;
+        const v2 = ball2.velocity;
+
+        const posDiff = ball1.position.subtract(ball2.position);
+        const velDiff = v1.subtract(v2);
+
+        const factor = posDiff.dot(velDiff) / posDiff.normSquared();
+
+        ball1.velocity = v1.add(posDiff.multiply(-factor));
+        ball2.velocity = v2.add(posDiff.multiply(factor));
     }
 
     updateBall(ball, timeDiff) {
 
-        const dPos = ball.velocity.clone();
-        dPos.mul(timeDiff);
-        
-        const newPos = ball.position.clone();
-        newPos.add(dPos);
+        const dPos = ball.velocity.multiply(timeDiff);
+        const newPos = ball.position.add(dPos);
 
         // Check if any bouncing occured and change the velocity direction if it did.
         let ballBounced = false;
@@ -78,6 +113,24 @@ class Physics {
 
         // Increase the velocity due to gravitational pull.
         velocity.y += this.gravity * timeDiff;
+    }
+
+    updateBalls(balls, timeDiff) {
+        // Update balls positions.
+        balls.forEach( ball => {
+            this.updateBall(ball, timeDiff);
+        });
+
+        // Handle ball collisions. Check every pair of balls.
+        for (let one = 0; one < balls.length - 1; one++) {
+            for (let other = one + 1; other < balls.length; other++) {
+                const ball1 = balls[one];
+                const ball2 = balls[other];
+                if(this.detectCollision(ball1, ball2)) {
+                    this.handleCollision(ball1, ball2);
+                }
+            }
+        }
     }
 
     hasBouncedOfTopWall(pos) {
@@ -124,7 +177,7 @@ document.addEventListener("DOMContentLoaded", function(event){
 	const width = 500;
 	const height = 500;
     const gravity = 300;
-    const numBalls = 15;
+    const numBalls = 7;
 
     const physics = new Physics(width, height, gravity);
 
