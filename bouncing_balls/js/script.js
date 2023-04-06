@@ -39,29 +39,45 @@ class Ball {
 }
 
 class Physics {
-    constructor(width, height) {
+    constructor(width, height, gravity = 0) {
         this.width = width;
         this.height = height;
+        this.gravity = gravity;
+    }
+
+    updateBalls(balls, timeDiff) {
+        balls.forEach( ball => {
+            this.updateBall(ball, timeDiff);
+        });
     }
 
     updateBall(ball, timeDiff) {
+
         const dPos = ball.velocity.clone();
         dPos.mul(timeDiff);
         
         const newPos = ball.position.clone();
         newPos.add(dPos);
 
-        ball.position = newPos;
-        
-        // Check if any bouncing occured.
+        // Check if any bouncing occured and change the velocity direction if it did.
+        let ballBounced = false;
         const velocity = ball.velocity;
         if(this.hasBouncedOfTopWall(newPos) || this.hasBouncedOfBottomWall(newPos)) {
             velocity.y = -velocity.y;
+            ballBounced = true;
         }
 
         if(this.hasBouncedOfLeftWall(newPos) || this.hasBouncedOfRightWall(newPos)) {
             velocity.x = -velocity.x;
+            ballBounced = true;
         }
+
+        if(!ballBounced) {
+            ball.position = newPos;
+        }
+
+        // Increase the velocity due to gravitational pull.
+        velocity.y += this.gravity * timeDiff;
     }
 
     hasBouncedOfTopWall(pos) {
@@ -81,12 +97,36 @@ class Physics {
     }
 }
 
+function getRandomNumberInRange(min, max) {
+    // Random generates a random number from 0 to 1 with uniform probability.
+    return Math.random() * (max - min) + min;
+}
+
+function getRandomVec(minX, maxX, minY, maxY) {
+    return new Vector(
+        getRandomNumberInRange(minX, maxX), 
+        getRandomNumberInRange(minY, maxY));
+}
+
+function generateBalls(width, height, numBalls) {
+    const balls = [];
+    for (let id = 0; id < numBalls; id++) {
+        const pos = getRandomVec(0, width, 0, height);        
+        const vel = getRandomVec(-200, 200, -200, 200);
+        balls.push(new Ball(pos, vel, 10));
+    }
+
+    return balls;
+}
+
 // Define all the logic after the content has been loaded.
 document.addEventListener("DOMContentLoaded", function(event){
 	const width = 500;
 	const height = 500;
+    const gravity = 300;
+    const numBalls = 15;
 
-    const physics = new Physics(width, height);
+    const physics = new Physics(width, height, gravity);
 
     const canvas = document.getElementById("canvas");
     canvas.width = width;
@@ -94,7 +134,7 @@ document.addEventListener("DOMContentLoaded", function(event){
 
     const ctx = canvas.getContext("2d");
 
-    const ball = new Ball(new Vector(250, 250), new Vector(30, 100), 5);
+    const balls = generateBalls(width, height, numBalls);
 
     let lastTime;
     function animate(currentTime) {
@@ -108,16 +148,18 @@ document.addEventListener("DOMContentLoaded", function(event){
         lastTime = currentTime;
 
         // Update the ball position.
-        physics.updateBall(ball, timeDiff);
+        physics.updateBalls(balls, timeDiff);
 
         // Clear the canvas.
         ctx.clearRect(0, 0, width, height);
     
-        // Draw the ball.
-        const pos = ball.position;
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, ball.radius, 0, 2 * Math.PI);
-        ctx.fill();
+        // Draw the balls.
+        balls.forEach( ball => {
+            const pos = ball.position;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, ball.radius, 0, 2 * Math.PI);
+            ctx.fill();
+        });
     
         requestAnimationFrame(animate);
     }
