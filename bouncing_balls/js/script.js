@@ -62,9 +62,6 @@ class Ball {
 }
 
 class Physics {
-    #pushSource = null;
-    #pushForce = 100;
-
     constructor(width, height, gravity = 0) {
         this.width = width;
         this.height = height;
@@ -116,13 +113,6 @@ class Physics {
 
         // Increase the velocity due to gravitational pull.
         velocity.y += this.gravity * timeDiff;
-
-        // Do radial push, if present.
-        if(this.#pushSource) {
-            console.log("Push!");
-            const radialVec = ball.position.subtract(this.#pushSource).normalize();
-            ball.velocity = ball.velocity.add(radialVec.multiply(this.#pushForce));
-        }
     }
 
     updateBalls(balls, timeDiff) {
@@ -130,9 +120,6 @@ class Physics {
         balls.forEach( ball => {
             this.updateBall(ball, timeDiff);
         });
-
-        // Reset the push.
-        this.#pushSource = null;
 
         // Handle ball collisions. Check every pair of balls.
         for (let one = 0; one < balls.length - 1; one++) {
@@ -162,8 +149,16 @@ class Physics {
         return pos.x > this.width;
     }
 
-    createRadialPush(pos) {
-        this.#pushSource = pos;        
+    radiallyPushBalls(balls, pushSource) {
+        balls.forEach( ball => {
+            const posDiff = ball.position.subtract(pushSource);
+            const dist = posDiff.norm();
+            if(dist < 5 * ball.radius) {
+                const radialVec = posDiff.normalize();
+                const pushForce = radialVec.multiply(100);
+                ball.velocity = ball.velocity.add(pushForce);
+            }
+        });
     }
 }
 
@@ -211,7 +206,7 @@ document.addEventListener("DOMContentLoaded", function(event){
         const canvasX = (event.clientX - canvasRect.left) * scaleX;
         const canvasY = (event.clientY - canvasRect.top) * scaleY;
 
-        physics.createRadialPush(new Vector(canvasX, canvasY));
+        physics.radiallyPushBalls(balls, new Vector(canvasX, canvasY));
     });
 
 
