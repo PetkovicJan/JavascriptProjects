@@ -58,6 +58,7 @@ class Ball {
         this.position = position;
         this.velocity = velocity;
         this.radius = radius;
+        this.handlePhysics = true;
     }
 }
 
@@ -116,16 +117,23 @@ class Physics {
     }
 
     updateBalls(balls, timeDiff) {
+        // Filter out those, that need to be handled by physics.
+        const physicsBalls = balls.filter(ball => {
+            return ball.handlePhysics;
+        });
+
         // Update balls positions.
-        balls.forEach( ball => {
-            this.updateBall(ball, timeDiff);
+        physicsBalls.forEach( ball => {
+            if(ball.handlePhysics) {
+                this.updateBall(ball, timeDiff);
+            }
         });
 
         // Handle ball collisions. Check every pair of balls.
-        for (let one = 0; one < balls.length - 1; one++) {
-            for (let other = one + 1; other < balls.length; other++) {
-                const ball1 = balls[one];
-                const ball2 = balls[other];
+        for (let one = 0; one < physicsBalls.length - 1; one++) {
+            for (let other = one + 1; other < physicsBalls.length; other++) {
+                const ball1 = physicsBalls[one];
+                const ball2 = physicsBalls[other];
                 if(this.detectCollision(ball1, ball2)) {
                     this.handleCollision(ball1, ball2);
                 }
@@ -200,15 +208,37 @@ document.addEventListener("DOMContentLoaded", function(event){
     const balls = generateBalls(width, height, numBalls);
 
     canvas.addEventListener("click", (event) => {
-        const canvasRect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / canvasRect.width;
-        const scaleY = canvas.height / canvasRect.height;
-        const canvasX = (event.clientX - canvasRect.left) * scaleX;
-        const canvasY = (event.clientY - canvasRect.top) * scaleY;
-
-        physics.radiallyPushBalls(balls, new Vector(canvasX, canvasY));
+        const mousePos = new Vector(event.offsetX, event.offsetY);
+        physics.radiallyPushBalls(balls, mousePos);
     });
 
+    let currentClickedBall = null;
+
+    canvas.addEventListener("mousedown", event => {
+        const mousePos = new Vector(event.offsetX, event.offsetY);
+        const clickedBall = balls.find(ball => {
+            return ball.position.subtract(mousePos).norm() < 5 * ball.radius;
+        });
+
+        if(clickedBall) {
+            currentClickedBall = clickedBall;
+            currentClickedBall.handlePhysics = false;
+            currentClickedBall.position = mousePos;
+            currentClickedBall.velocity = new Vector(0, 0);
+        }
+    });
+
+    canvas.addEventListener("mouseup", event => {
+        currentClickedBall.handlePhysics = true;
+        currentClickedBall = null;
+    });
+
+    canvas.addEventListener("mousemove", event => {
+        if(currentClickedBall) {
+            const mousePos = new Vector(event.offsetX, event.offsetY);
+            currentClickedBall.position = mousePos;
+        }
+    });
 
     const ctx = canvas.getContext("2d");
 
