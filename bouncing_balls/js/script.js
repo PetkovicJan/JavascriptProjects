@@ -62,6 +62,9 @@ class Ball {
 }
 
 class Physics {
+    #pushSource = null;
+    #pushForce = 100;
+
     constructor(width, height, gravity = 0) {
         this.width = width;
         this.height = height;
@@ -113,6 +116,13 @@ class Physics {
 
         // Increase the velocity due to gravitational pull.
         velocity.y += this.gravity * timeDiff;
+
+        // Do radial push, if present.
+        if(this.#pushSource) {
+            console.log("Push!");
+            const radialVec = ball.position.subtract(this.#pushSource).normalize();
+            ball.velocity = ball.velocity.add(radialVec.multiply(this.#pushForce));
+        }
     }
 
     updateBalls(balls, timeDiff) {
@@ -120,6 +130,9 @@ class Physics {
         balls.forEach( ball => {
             this.updateBall(ball, timeDiff);
         });
+
+        // Reset the push.
+        this.#pushSource = null;
 
         // Handle ball collisions. Check every pair of balls.
         for (let one = 0; one < balls.length - 1; one++) {
@@ -147,6 +160,10 @@ class Physics {
 
     hasBouncedOfRightWall(pos) {
         return pos.x > this.width;
+    }
+
+    createRadialPush(pos) {
+        this.#pushSource = pos;        
     }
 }
 
@@ -185,9 +202,20 @@ document.addEventListener("DOMContentLoaded", function(event){
     canvas.width = width;
     canvas.height = height;
 
-    const ctx = canvas.getContext("2d");
-
     const balls = generateBalls(width, height, numBalls);
+
+    canvas.addEventListener("click", (event) => {
+        const canvasRect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / canvasRect.width;
+        const scaleY = canvas.height / canvasRect.height;
+        const canvasX = (event.clientX - canvasRect.left) * scaleX;
+        const canvasY = (event.clientY - canvasRect.top) * scaleY;
+
+        physics.createRadialPush(new Vector(canvasX, canvasY));
+    });
+
+
+    const ctx = canvas.getContext("2d");
 
     let lastTime;
     function animate(currentTime) {
