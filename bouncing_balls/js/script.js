@@ -170,6 +170,78 @@ class Physics {
     }
 }
 
+class GrabHandler {
+    #currentClickedBall = null;
+    #lastTime = null;
+
+    constructor(canvas, balls) {
+
+        canvas.addEventListener("mousedown", event => {
+            this.#handleMouseDown(balls, event);
+        });
+
+        canvas.addEventListener("mouseup", event => {
+            this.#handleMouseUp(event);
+        });
+
+        canvas.addEventListener("mouseout", event => {
+            this.#handleMouseUp(event);
+        });
+
+        canvas.addEventListener("mousemove", event => {
+            this.#handleMouseMove(event);
+        });
+    }
+
+    #handleMouseDown(balls, event) {
+        const mousePos = new Vector(event.offsetX, event.offsetY);
+        const clickedBall = balls.find(ball => {
+            return ball.position.subtract(mousePos).norm() < 5 * ball.radius;
+        });
+
+        if(!clickedBall) {
+            return;
+        }
+
+        this.#currentClickedBall = clickedBall;
+        this.#currentClickedBall.handlePhysics = false;
+        this.#currentClickedBall.position = mousePos;
+        this.#currentClickedBall.velocity = new Vector(0, 0);
+        this.#lastTime = performance.now();
+    }
+
+    #handleMouseUp(event) {
+        if(!this.#currentClickedBall) {
+            return;
+        }
+
+        this.#currentClickedBall.handlePhysics = true;
+        this.#currentClickedBall = null;
+        this.#lastTime = null;
+    }
+
+    #handleMouseMove(event) {
+        if(!this.#currentClickedBall) {
+            return;
+        }
+
+        const mousePos = new Vector(event.offsetX, event.offsetY);
+
+        // Compute the current velocity.
+        const now = performance.now();
+        const timeDiff = (now - this.#lastTime) / 1000;
+        const currentVelocity = mousePos.subtract(this.#currentClickedBall.position).multiply(1 / timeDiff);
+
+        // Compute simple "moving" average of velocity to obtain a smooth behavior.
+        const weight = 10;
+        this.#currentClickedBall.velocity = this.#currentClickedBall.velocity.multiply(weight).add(currentVelocity).multiply(1 / (1 + weight));
+
+        this.#currentClickedBall.position = mousePos;
+
+        this.#lastTime = now;
+    }
+}
+
 function getRandomNumberInRange(min, max) {
     // Random generates a random number from 0 to 1 with uniform probability.
     return Math.random() * (max - min) + min;
@@ -207,38 +279,8 @@ document.addEventListener("DOMContentLoaded", function(event){
 
     const balls = generateBalls(width, height, numBalls);
 
-    canvas.addEventListener("click", (event) => {
-        const mousePos = new Vector(event.offsetX, event.offsetY);
-        physics.radiallyPushBalls(balls, mousePos);
-    });
+    const grabHandler = new GrabHandler(canvas, balls);
 
-    let currentClickedBall = null;
-
-    canvas.addEventListener("mousedown", event => {
-        const mousePos = new Vector(event.offsetX, event.offsetY);
-        const clickedBall = balls.find(ball => {
-            return ball.position.subtract(mousePos).norm() < 5 * ball.radius;
-        });
-
-        if(clickedBall) {
-            currentClickedBall = clickedBall;
-            currentClickedBall.handlePhysics = false;
-            currentClickedBall.position = mousePos;
-            currentClickedBall.velocity = new Vector(0, 0);
-        }
-    });
-
-    canvas.addEventListener("mouseup", event => {
-        currentClickedBall.handlePhysics = true;
-        currentClickedBall = null;
-    });
-
-    canvas.addEventListener("mousemove", event => {
-        if(currentClickedBall) {
-            const mousePos = new Vector(event.offsetX, event.offsetY);
-            currentClickedBall.position = mousePos;
-        }
-    });
 
     const ctx = canvas.getContext("2d");
 
