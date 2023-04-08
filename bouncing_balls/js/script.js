@@ -70,10 +70,18 @@ class Physics {
     }
 
     detectCollision(ball1, ball2) {
-        const pos1 = ball1.position;
-        const pos2 = ball2.position;
-        const dist = pos2.subtract(pos1).norm();
-        return dist < (ball1.radius + ball2.radius);
+        // First check, if the balls are close enough
+        const posDiff = ball2.position.subtract(ball1.position);
+        if(posDiff.norm() < (ball1.radius + ball2.radius)) {
+            // It is also important that the balls are moving towards each other. 
+            // Due to discrete nature of game physics it is possible, that the collision 
+            // has already been handled and the balls are moving away from each other, yet 
+            // they are still closer to each other than the sum of their radii.
+            const velDiff = ball2.velocity.subtract(ball1.velocity);
+            return (posDiff.dot(velDiff) < 0);
+        }
+
+        return false;
     }
 
     handleCollision(ball1, ball2) {
