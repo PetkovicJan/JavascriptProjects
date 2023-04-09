@@ -165,16 +165,8 @@ class Physics {
         return pos.x > this.width;
     }
 
-    radiallyPushBalls(balls, pushSource) {
-        balls.forEach( ball => {
-            const posDiff = ball.position.subtract(pushSource);
-            const dist = posDiff.norm();
-            if(dist < 5 * ball.radius) {
-                const radialVec = posDiff.normalize();
-                const pushForce = radialVec.multiply(100);
-                ball.velocity = ball.velocity.add(pushForce);
-            }
-        });
+    getKineticEnergies(balls) {
+        return balls.map(ball => 0.5 * ball.velocity.normSquared());
     }
 }
 
@@ -182,7 +174,9 @@ class GrabHandler {
     #currentClickedBall = null;
     #lastTime = null;
 
-    constructor(canvas, balls) {
+    constructor(ballsCanvas, balls) {
+
+        const canvas = ballsCanvas.getCanvas();
 
         canvas.addEventListener("mousedown", event => {
             this.#handleMouseDown(balls, event);
@@ -242,11 +236,62 @@ class GrabHandler {
 
         // Compute simple "moving" average of velocity to obtain a smooth behavior.
         const weight = 10;
-        this.#currentClickedBall.velocity = this.#currentClickedBall.velocity.multiply(weight).add(currentVelocity).multiply(1 / (1 + weight));
+        this.#currentClickedBall.velocity = 
+            this.#currentClickedBall.velocity.multiply(weight).add(currentVelocity)
+            .multiply(1 / (1 + weight));
 
         this.#currentClickedBall.position = mousePos;
 
         this.#lastTime = now;
+    }
+}
+
+class BallsCanvas {
+
+    #context = null;
+    
+    constructor(width, height) {
+        this.canvas = document.getElementById("ballsCanvas");
+        this.canvas.width = width;
+        this.canvas.height = height;
+
+        this.#context = this.canvas.getContext("2d");
+    }
+
+    updateCanvas(balls)
+    {
+        // Clear the canvas.
+        this.#context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+        // Draw the balls.
+        balls.forEach( ball => {
+            const pos = ball.position;
+            this.#context.beginPath();
+            this.#context.arc(pos.x, pos.y, ball.radius, 0, 2 * Math.PI);
+            this.#context.fill();
+        });
+    }
+
+    getCanvas() {
+        return this.canvas;
+    }
+}
+
+class FrameTimeTracker {
+
+    constructor(){
+        this.lastTime = null;
+    }
+
+    getFrameTime(time) {
+        if(!this.lastTime) {
+            this.lastTime = time;
+        }
+
+        const frameTime = (time - this.lastTime) / 1000;
+        this.lastTime = time;
+
+        return frameTime;
     }
 }
 
@@ -281,41 +326,22 @@ document.addEventListener("DOMContentLoaded", function(event){
     const radius = 5;
 
     const physics = new Physics(width, height, gravity);
-
-    const canvas = document.getElementById("ballsCanvas");
-    canvas.width = width;
-    canvas.height = height;
-
     const balls = generateBalls(width, height, numBalls, radius);
+    const ballsCanvas = new BallsCanvas(width, height);
+    const grabHandler = new GrabHandler(ballsCanvas, balls);
 
-    const grabHandler = new GrabHandler(canvas, balls);
-
-    const ctx = canvas.getContext("2d");
-
-    let lastTime;
+    const frameTimeTracker = new FrameTimeTracker();
     function animate(currentTime) {
-
-        if(!lastTime) {
-            lastTime = currentTime;
-        }
-
-        // Obtain frame time difference in seconds.
-        timeDiff = (currentTime - lastTime) / 1000;
-        lastTime = currentTime;
+        const frameTime = frameTimeTracker.getFrameTime(currentTime);
 
         // Update the ball position.
-        physics.updateBalls(balls, timeDiff);
+        physics.updateBalls(balls, frameTime);
 
-        // Clear the canvas.
-        ctx.clearRect(0, 0, width, height);
-    
-        // Draw the balls.
-        balls.forEach( ball => {
-            const pos = ball.position;
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, ball.radius, 0, 2 * Math.PI);
-            ctx.fill();
-        });
+        // Compute kinetic energies of individual balls.
+        const kineticEnergies = physics.getKineticEnergies(balls);
+        
+        // Update canvas.
+        ballsCanvas.updateCanvas(balls);
     
         requestAnimationFrame(animate);
     }
