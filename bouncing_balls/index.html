@@ -8,12 +8,19 @@
 
   <title>Bouncing balls</title>
   <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
   <div class="container">
-    <canvas id="canvas"></canvas>
+    <canvas id="ballsCanvas"></canvas>
+    <!-- Wrap canvas used for chart.js into a div to control its size. 
+      Internally it overrides even inline specifications and this is 
+      the most straightforward solution. -->
+    <div id="graphDiv">
+      <canvas id="graphCanvas" width="400" height="400"></canvas>
+    </div>
   </div>
 
   <script src="js/script.js"></script>

@@ -261,12 +261,12 @@ function getRandomVec(minX, maxX, minY, maxY) {
         getRandomNumberInRange(minY, maxY));
 }
 
-function generateBalls(width, height, numBalls) {
+function generateBalls(width, height, numBalls, radius) {
     const balls = [];
     for (let id = 0; id < numBalls; id++) {
         const pos = getRandomVec(0, width, 0, height);        
         const vel = getRandomVec(-200, 200, -200, 200);
-        balls.push(new Ball(pos, vel, 10));
+        balls.push(new Ball(pos, vel, radius));
     }
 
     return balls;
@@ -276,19 +276,19 @@ function generateBalls(width, height, numBalls) {
 document.addEventListener("DOMContentLoaded", function(event){
 	const width = 500;
 	const height = 500;
-    const gravity = 300;
-    const numBalls = 7;
+    const gravity = 0;
+    const numBalls = 100;
+    const radius = 5;
 
     const physics = new Physics(width, height, gravity);
 
-    const canvas = document.getElementById("canvas");
+    const canvas = document.getElementById("ballsCanvas");
     canvas.width = width;
     canvas.height = height;
 
-    const balls = generateBalls(width, height, numBalls);
+    const balls = generateBalls(width, height, numBalls, radius);
 
     const grabHandler = new GrabHandler(canvas, balls);
-
 
     const ctx = canvas.getContext("2d");
 
@@ -322,6 +322,26 @@ document.addEventListener("DOMContentLoaded", function(event){
 
     // Start animation loop.
     requestAnimationFrame(animate);
+
+    const graphCanvas = document.getElementById("graphCanvas");
+    new Chart(graphCanvas, {
+        type: 'bar',
+        data: {
+        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+        datasets: [{
+            label: '# of Votes',
+            data: [12, 19, 3, 5, 2, 3],
+            borderWidth: 1
+        }]
+        },
+        options: {
+        scales: {
+            y: {
+            beginAtZero: true
+            }
+        }
+        }
+    });
 });
 
 })(window);
