@@ -295,6 +295,60 @@ class FrameTimeTracker {
     }
 }
 
+class Histogram {
+
+    #min = null;
+    #numBins = null;
+    #binWidth = null;
+    #chart = null;
+    
+    constructor(min, max, numBins) {
+        this.#min = min;
+        this.#numBins = numBins;
+        this.#binWidth = Math.ceil((max - min) / numBins);
+
+        const binLabels = [...Array(numBins).keys()];
+        const context = document.getElementById("graphCanvas").getContext("2d");
+        this.#chart = new Chart(context, {
+            type: 'bar',
+            data: {
+                labels: binLabels,
+                datasets: [{
+                    label: '# of balls',
+                    data: [],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        }); 
+    }
+
+    #computeHistData(values) {
+        const histData = Array(this.#numBins).fill(0);
+        values.forEach(val => {
+            // Compute the bin, that this value falls in.            
+            const binIndex = Math.floor((val - this.#min) / this.#binWidth);
+
+            // Now increment the count at that index.
+            histData[binIndex] += 1;
+        });
+
+        return histData;
+    }
+
+    setData(values) {
+        const histData = this.#computeHistData(values);
+        this.#chart.data.datasets[0].data = histData;
+        this.#chart.update();
+    }
+}
+
 function getRandomNumberInRange(min, max) {
     // Random generates a random number from 0 to 1 with uniform probability.
     return Math.random() * (max - min) + min;
@@ -322,13 +376,14 @@ document.addEventListener("DOMContentLoaded", function(event){
 	const width = 500;
 	const height = 500;
     const gravity = 0;
-    const numBalls = 100;
-    const radius = 5;
+    const numBalls = 1000;
+    const radius = 3;
 
     const physics = new Physics(width, height, gravity);
     const balls = generateBalls(width, height, numBalls, radius);
     const ballsCanvas = new BallsCanvas(width, height);
     const grabHandler = new GrabHandler(ballsCanvas, balls);
+    const kinEnergyHistogram = new Histogram(0, 100000, 20);
 
     const frameTimeTracker = new FrameTimeTracker();
     function animate(currentTime) {
@@ -340,6 +395,9 @@ document.addEventListener("DOMContentLoaded", function(event){
         // Compute kinetic energies of individual balls.
         const kineticEnergies = physics.getKineticEnergies(balls);
         
+        // Set the kinetic energies data of the displayed histogram.
+        kinEnergyHistogram.setData(kineticEnergies);
+
         // Update canvas.
         ballsCanvas.updateCanvas(balls);
     
@@ -348,26 +406,6 @@ document.addEventListener("DOMContentLoaded", function(event){
 
     // Start animation loop.
     requestAnimationFrame(animate);
-
-    const graphCanvas = document.getElementById("graphCanvas");
-    new Chart(graphCanvas, {
-        type: 'bar',
-        data: {
-        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-        datasets: [{
-            label: '# of Votes',
-            data: [12, 19, 3, 5, 2, 3],
-            borderWidth: 1
-        }]
-        },
-        options: {
-        scales: {
-            y: {
-            beginAtZero: true
-            }
-        }
-        }
-    });
 });
 
 })(window);
